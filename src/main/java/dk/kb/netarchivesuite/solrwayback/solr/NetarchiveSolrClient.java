@@ -1592,13 +1592,13 @@ public class NetarchiveSolrClient {
         return stats;
     }
 
-    // returns JSON. Response not supported by SolrJ
+ // returns JSON. Response not supported by SolrJ
     /*
      * Example query:
      * by year
      * curl -s -d 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:100 facet:{years:{type:range,field:crawl_year,start:2000,end:2020,gap:1}}}}' 'http://localhost:52300/solr/ns/select' > demokrati.json
      * by month
-     * curl -s -d 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:100 facet:{years:{type:range,field:crawl_date,start:'2000-01-01T00:00:00Z',end:'2001-01-01T00:00:00Z',gap:'+1MONTH'}}}}' 'http://localhost:52300/solr/ns/select' > demokrati.json
+     * curl -s -d 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:100 facet:{years:{type:range,field:crawl_date,start:'2000-01-01T00:00:00Z',end:'2001-01-01T23:59:59Z',gap:'+1MONTH'}}}}' 'http://localhost:52300/solr/ns/select' > demokrati.json
      */
     public String domainStatisticsForQuery(String query, List<String> fq, String startdate, String enddate, String scale) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
@@ -1615,26 +1615,12 @@ public class NetarchiveSolrClient {
                 "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_year,start:" + startYear + ",end:" + endYear + ",gap:1}}}}");
         } else {
             // custom scale
-            String start = "'" + startdate + "T00:00:00Z'";
-            String end = "'" + enddate + "T00:00:00Z'";
-            String gap = "";
-            switch (scale) {
-                case "MONTH" :
-                    gap = "'+1MONTH'";
-                    break;
-                case "WEEK" :
-                    gap = "'+7DAYS'";
-                    break;
-                case "DAY" :
-                    gap = "'+1DAY'";
-                    break;
-                case "YEAR" :
-                default :
-                    gap = "'+1YEAR'";
-                    break;
-            }
+            String start = startdate + "T00:00:00Z";
+            String end =  enddate + "T23:59:59Z";
+            String gap = getGapFromScale(scale);
             solrQuery.setParam("json.facet",
-                "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_date,start:"+ start + ",end:"+ end + ",gap:"+ gap + "}}}}");
+                "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_date,start:'"+ start + "',end:'"+ end + "',gap:'"+ gap + "'}}}}");
+            solrQuery.addFilterQuery("crawl_date:[" + start + " TO " + end + "]");
         }
 
 
@@ -1651,6 +1637,26 @@ public class NetarchiveSolrClient {
         NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
+    }
+
+    private static String getGapFromScale(String scale) {
+        String gap = "";
+        switch (scale) {
+            case "MONTH" :
+                gap = "+1MONTH";
+                break;
+            case "WEEK" :
+                gap = "+7DAYS";
+                break;
+            case "DAY" :
+                gap = "+1DAY";
+                break;
+            case "YEAR" :
+            default :
+                gap = "+1YEAR";
+                break;
+        }
+        return gap;
     }
 
     // TO, remove method and inline

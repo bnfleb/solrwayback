@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 
 export default {
    async createVisualization(query, facets, options, startDate, endDate, timeScale) {
@@ -84,6 +85,14 @@ export default {
         d3.csv(dataUrl, function(error, data) {
             if(error) {
                reject(error)
+            } else if(data.length == 1) {
+               svg.append('text')
+                .text('No data available')
+                .style('font-size', '20px')
+                .style('text-anchor', 'middle')
+                .style('dominant-baseline', 'middle')
+
+               resolve()
             } else {
               color.domain(d3.keys(data[0]).filter(function(key) { return key !== 'State' }))
 
@@ -93,7 +102,7 @@ export default {
               d.total = d.ages[d.ages.length - 1].y1
               })
           
-              x.domain(data.map(function(d) { return d.State }))
+              x.domain(data.map(function(d) { return StringManipulationUtils.methods.$_displayDate(d.State, timeScale)}))
               y.domain([0, d3.max(data, function(d) { return d.total })])
           
               // For rotated axis labels
@@ -122,7 +131,7 @@ export default {
                 .data(data)
               .enter().append('g')
                 .attr('class', 'g')
-                .attr('transform', function(d) { return 'translate(' + x(d.State) + ',0)' })
+                .attr('transform', function(d) { return 'translate(' + x(StringManipulationUtils.methods.$_displayDate(d.State, timeScale)) + ',0)' })
           
               state.selectAll('rect')
                 .data(function(d) { return d.ages })
