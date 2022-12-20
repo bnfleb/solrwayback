@@ -25,7 +25,7 @@ public class DomainStatisticsForDomainParser {
     long totalCount = jsonFacets.getLong("count"); //Total summation over all year of all results.    
     JSONObject jsonDomains= JsonUtils.getSubObjectIfExists(jsonFacets, "domains");
     
-       
+    if (jsonDomains != null) {
     JSONArray buckets = jsonDomains.getJSONArray("buckets");
     
     for (int i = 0;i<buckets.length();i++) {
@@ -57,7 +57,7 @@ public class DomainStatisticsForDomainParser {
         fc.setCount(count); 
         yearCountForDomains.add(fc);
       }
-    
+    }
     }
   return yearFacetDomainCountMap;
   }

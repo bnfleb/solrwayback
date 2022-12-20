@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -93,4 +94,25 @@ public class DateUtils {
       }
   }
 
+
+  public static LocalDate addScaleToDate(LocalDate date, String scale) {
+      LocalDate nextDate;
+      switch (scale) {
+          case "MONTH" :
+              nextDate = date.plusMonths(1);
+              break;
+          case "WEEK" :
+              nextDate = date.plusWeeks(1);
+              break;
+          case "DAY" :
+              nextDate = date.plusDays(1);
+              break;
+          case "YEAR" :
+          default :
+              nextDate = date.plusYears(1);
+              break;
+      }
+      return nextDate;
+  }
+  
 }

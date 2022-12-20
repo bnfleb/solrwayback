@@ -1538,20 +1538,24 @@ public class NetarchiveSolrClient {
      * hyperloglog) Total size (of the unique pages). (not so precise due, tests
      * show max 10% error, less for if there are many pages)
      */
-    public DomainStatistics domainStatistics(String domain, String startDate, String endDate) throws Exception {
+    public DomainStatistics domainStatistics(String domain, String startDate, String endDate, boolean endOfDay) throws Exception {
 
         DomainStatistics stats = new DomainStatistics();
         stats.setDate(startDate);
         stats.setDomain(domain);
 
         String searchString = "domain:\"" + domain + "\"";
+        String endHour = "T00:00:00Z";
+        if (endOfDay) {
+            endHour = "T23:59:59Z";
+        }
 
         SolrQuery solrQuery = new SolrQuery();
 
         solrQuery.setQuery(searchString);
         solrQuery.set("facet", "false");
         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T00:00:00Z]");
+        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + endHour + "]");
         solrQuery.setRows(0);
         solrQuery.add("fl", "id");
         solrQuery.add("stats", "true");
@@ -1577,7 +1581,7 @@ public class NetarchiveSolrClient {
         solrQuery = new SolrQuery();
         solrQuery.setQuery("links_domains:\"" + domain + "\" -" + searchString); // links to, but not from same domain
         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T00:00:00Z]");
+        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + endHour +"]");
         solrQuery.setRows(0);
         solrQuery.add("stats", "true");
         solrQuery.add("fl", "id");

@@ -39,6 +39,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
@@ -57,6 +58,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -181,35 +183,25 @@ public class Facade {
     public static List<DomainStatistics> statisticsDomain(String domain, LocalDate start, LocalDate end, String scale) throws Exception {
         List<DomainStatistics> stats = new ArrayList<>();
         LocalDate date = start;
-        LocalDate nextDate = addScaleToDate(date, scale);
+        LocalDate nextDate = DateUtils.addScaleToDate(date, scale);
+        if ("MONTH".equals(scale)) {
+            nextDate = YearMonth.from(date).atEndOfMonth().plusDays(1);
+        } else if ("YEAR".equals(scale)) {
+            nextDate = LocalDate.of(date.getYear() + 1, 1, 1);
+        }
+        boolean endOfPeriod = false;
 
-        while (!nextDate.isAfter(end)) {
-            DomainStatistics stat = NetarchiveSolrClient.getInstance().domainStatistics(domain, date.format(DateTimeFormatter.ISO_DATE), nextDate.format(DateTimeFormatter.ISO_DATE));
+        while (!endOfPeriod) {
+            if (nextDate.isAfter(end)) {
+                nextDate = end;
+                endOfPeriod = true;
+            }
+            DomainStatistics stat = NetarchiveSolrClient.getInstance().domainStatistics(domain, date.format(DateTimeFormatter.ISO_DATE), nextDate.format(DateTimeFormatter.ISO_DATE), endOfPeriod);
             stats.add(stat);
             date = nextDate;
-            nextDate = addScaleToDate(date, scale);
+            nextDate = DateUtils.addScaleToDate(date, scale);
         }
         return stats;
-    }
-
-    private static LocalDate addScaleToDate(LocalDate date, String scale) {
-        LocalDate nextDate;
-        switch (scale) {
-            case "MONTH" :
-                nextDate = date.plusMonths(1);
-                break;
-            case "WEEK" :
-                nextDate = date.plusWeeks(1);
-                break;
-            case "DAY" :
-                nextDate = date.plusDays(1);
-                break;
-            case "YEAR" :
-            default :
-                nextDate = date.plusYears(1);
-                break;
-        }
-        return nextDate;
     }
 
     public static ArrayList<ImageUrl> imagesLocationSearch(String searchText, String filter, String results, double latitude, double longitude, double radius,
