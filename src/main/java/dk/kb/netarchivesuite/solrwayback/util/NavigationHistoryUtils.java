@@ -79,7 +79,7 @@ public class NavigationHistoryUtils {
     public static int populateQueryEntry(int actionNumber, String url, List<Map<String, Object>> result) {
         Map<String, Object> jsonEntry = new LinkedHashMap<>();
         jsonEntry.put("number", actionNumber++);
-        jsonEntry.put("action", "query");
+        jsonEntry.put("action", NavigationHistoryAction.QUERY);
 
         // Extract query
         String query = extractQueryFromUrl(url);
@@ -134,7 +134,7 @@ public class NavigationHistoryUtils {
     }
 
     /**
-     * Populate a playback link entry in the result list. Destinguishes between clicks from search results vs. links within playback.
+     * Populate a playback link entry in the result list. Distinguishes between clicks from search results vs. links within playback.
      */
     public static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String originalUrl, List<Map<String, Object>> result, String url) {
         // Playback URL
@@ -143,9 +143,9 @@ public class NavigationHistoryUtils {
 
         // Distinguish between clicks from search results vs. links within playback
         if (lastWasPlayback) {
-            jsonEntry.put("action", "playback link clicked");
+            jsonEntry.put("action", NavigationHistoryAction.PLAYBACK_LINK_CLICKED);
         } else {
-            jsonEntry.put("action", "search result clicked");
+            jsonEntry.put("action", NavigationHistoryAction.SEARCH_RESULT_CLICKED);
         }
 
         jsonEntry.put("date", timestamp);
