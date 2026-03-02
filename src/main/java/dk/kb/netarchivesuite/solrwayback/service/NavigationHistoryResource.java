@@ -11,8 +11,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static dk.kb.netarchivesuite.solrwayback.util.DateUtils.convertWaybackDate2SolrDate;
@@ -27,7 +28,8 @@ public class NavigationHistoryResource {
     private static final Logger log = LoggerFactory.getLogger(NavigationHistoryResource.class);
     private static final String SESSION_KEY = "solrwayback_query_history";
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    // Use ISO-8601 UTC format, e.g. 2005-01-01T12:00:00Z
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ISO_INSTANT;
 
     // Maximum allowed size of the stored history in bytes (25 MB)
     public static long MAX_HISTORY_BYTES = 25L * 1024L * 1024L;
@@ -47,7 +49,8 @@ public class NavigationHistoryResource {
             List<Map<String, String>> history = getHistory(session);
 
             String url = (String) data.get("url");
-            String timestamp = DATE_FORMAT.format(LocalDateTime.now());
+            // Truncate to seconds so we don't include fractional seconds (e.g. 2026-03-02T18:05:57Z)
+            String timestamp = DATE_FORMAT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS));
 
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);
@@ -95,7 +98,8 @@ public class NavigationHistoryResource {
             String url = (String) data.get("url");
             String originalUrl = (String) data.get("originalUrl");
             String archivalDate = convertWaybackDate2SolrDate((String) data.get("waybackDate"));
-            String timestamp = DATE_FORMAT.format(LocalDateTime.now());
+            // Truncate to seconds so we don't include fractional seconds (e.g. 2026-03-02T18:05:57Z)
+            String timestamp = DATE_FORMAT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS));
 
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);
