@@ -94,11 +94,13 @@ public class NavigationHistoryResource {
 
             String url = (String) data.get("url");
             String originalUrl = (String) data.get("originalUrl");
-            String timestamp = convertWaybackDate2SolrDate((String) data.get("waybackDate"));
+            String archivalDate = convertWaybackDate2SolrDate((String) data.get("waybackDate"));
+            String timestamp = DATE_FORMAT.format(LocalDateTime.now());
 
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);
             entry.put("originalUrl", originalUrl);
+            entry.put("date", archivalDate);
             entry.put("timestamp", timestamp);
 
             // Check size before mutating the session-stored list
