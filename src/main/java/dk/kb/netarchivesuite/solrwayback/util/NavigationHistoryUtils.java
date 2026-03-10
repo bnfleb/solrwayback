@@ -76,10 +76,11 @@ public class NavigationHistoryUtils {
     /**
      * Populate a query entry in the result list
      */
-    public static int populateQueryEntry(int actionNumber, String url, List<Map<String, Object>> result) {
+    public static int populateQueryEntry(int actionNumber, String timestamp, String url, List<Map<String, Object>> result) {
         Map<String, Object> jsonEntry = new LinkedHashMap<>();
         jsonEntry.put("number", actionNumber++);
-        jsonEntry.put("action", "query");
+        jsonEntry.put("action", NavigationHistoryAction.QUERY);
+        jsonEntry.put("timestamp", timestamp);
 
         // Extract query
         String query = extractQueryFromUrl(url);
@@ -134,21 +135,22 @@ public class NavigationHistoryUtils {
     }
 
     /**
-     * Populate a playback link entry in the result list. Destinguishes between clicks from search results vs. links within playback.
+     * Populate a playback link entry in the result list. Distinguishes between clicks from search results vs. links within playback.
      */
-    public static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String originalUrl, List<Map<String, Object>> result, String url) {
+    public static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String date, String originalUrl, List<Map<String, Object>> result, String url) {
         // Playback URL
         Map<String, Object> jsonEntry = new LinkedHashMap<>();
         jsonEntry.put("number", actionNumber++);
 
         // Distinguish between clicks from search results vs. links within playback
         if (lastWasPlayback) {
-            jsonEntry.put("action", "playback link clicked");
+            jsonEntry.put("action", NavigationHistoryAction.PLAYBACK_LINK_CLICKED);
         } else {
-            jsonEntry.put("action", "search result clicked");
+            jsonEntry.put("action", NavigationHistoryAction.SEARCH_RESULT_CLICKED);
         }
 
-        jsonEntry.put("date", timestamp);
+        jsonEntry.put("timestamp", timestamp);
+        jsonEntry.put("date", date);
         jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
         jsonEntry.put("archivedUrl", url);
 
@@ -169,18 +171,19 @@ public class NavigationHistoryUtils {
         for (Map<String, String> entry : history) {
             String url = entry.get("url");
             String timestamp = entry.get("timestamp");
+            String date = entry.get("date");
             String originalUrl = entry.get("originalUrl");
 
             // Determine if this is a search query or playback URL
             if (url.contains("/search?query=")) {
                 // Only output if URL changed (covers query changes AND facet changes)
                 if (!url.equals(lastUrl)) {
-                    actionNumber = populateQueryEntry(actionNumber, url, result);
+                    actionNumber = populateQueryEntry(actionNumber, timestamp, url, result);
                     lastUrl = url;
                     lastWasPlayback = false;
                 }
             } else if (url.contains("/services/web/")) {
-                actionNumber = populateResultEntries(actionNumber, lastWasPlayback, timestamp, originalUrl, result, url);
+                actionNumber = populateResultEntries(actionNumber, lastWasPlayback, timestamp, date, originalUrl, result, url);
                 lastUrl = null;  // Reset so next search is always tracked
                 lastWasPlayback = true;
             }

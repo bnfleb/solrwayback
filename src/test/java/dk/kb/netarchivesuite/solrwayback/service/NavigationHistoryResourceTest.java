@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryAction;
+import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -328,13 +330,13 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         // Verify first entry
         Map<String, Object> firstEntry = entity.get(0);
         assertEquals(1, firstEntry.get("number"));
-        assertEquals("query", firstEntry.get("action"));
+        assertEquals(NavigationHistoryAction.QUERY, firstEntry.get("action"));
         assertEquals("test", firstEntry.get("query"));
 
         // Verify second entry
         Map<String, Object> secondEntry = entity.get(1);
         assertEquals(2, secondEntry.get("number"));
-        assertEquals("query", secondEntry.get("action"));
+        assertEquals(NavigationHistoryAction.QUERY, secondEntry.get("action"));
         assertEquals("example", secondEntry.get("query"));
     }
 
@@ -360,7 +362,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         assertEquals(1, entity.size());
 
         Map<String, Object> entry = entity.get(0);
-        assertEquals("query", entry.get("action"));
+        assertEquals(NavigationHistoryAction.QUERY, entry.get("action"));
         assertEquals("test", entry.get("query"));
         assertNotNull(entry.get("facets"));
 
@@ -381,6 +383,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createPlaybackEntry(
             "http://localhost:8080/services/web/20201231120000/http://example.com/page.html",
             "http://example.com/page.html",
+            "2026-03-02 15:30:00",
             "2020-12-31 12:00:00"
         ));
 
@@ -398,12 +401,12 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         // Verify search entry
         Map<String, Object> searchEntry = entity.get(0);
         assertEquals(1, searchEntry.get("number"));
-        assertEquals("query", searchEntry.get("action"));
+        assertEquals(NavigationHistoryAction.QUERY, searchEntry.get("action"));
 
         // Verify playback entry
         Map<String, Object> playbackEntry = entity.get(1);
         assertEquals(2, playbackEntry.get("number"));
-        assertEquals("search result clicked", playbackEntry.get("action"));
+        assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED, playbackEntry.get("action"));
         assertEquals("http://example.com/page.html", playbackEntry.get("url"));
         assertEquals("2020-12-31 12:00:00", playbackEntry.get("date"));
     }
@@ -440,11 +443,11 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
 
         // First playback should be "search result clicked"
         Map<String, Object> firstPlayback = entity.get(1);
-        assertEquals("search result clicked", firstPlayback.get("action"));
+        assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED, firstPlayback.get("action"));
 
         // Second playback should be "playback link clicked"
         Map<String, Object> secondPlayback = entity.get(2);
-        assertEquals("playback link clicked", secondPlayback.get("action"));
+        assertEquals(NavigationHistoryAction.PLAYBACK_LINK_CLICKED, secondPlayback.get("action"));
     }
 
     /**
@@ -620,10 +623,10 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         assertEquals(4, entity.size());
 
         // Verify order and action types
-        assertEquals("query", entity.get(0).get("action"));
-        assertEquals("search result clicked", entity.get(1).get("action"));
-        assertEquals("query", entity.get(2).get("action"));
-        assertEquals("search result clicked", entity.get(3).get("action"));
+        assertEquals(NavigationHistoryAction.QUERY, entity.get(0).get("action"));
+        assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED, entity.get(1).get("action"));
+        assertEquals(NavigationHistoryAction.QUERY, entity.get(2).get("action"));
+        assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED, entity.get(3).get("action"));
     }
 
     /**
@@ -677,6 +680,15 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         entry.put("url", url);
         entry.put("originalUrl", originalUrl);
         entry.put("timestamp", timestamp);
+        return entry;
+    }
+
+    private Map<String, String> createPlaybackEntry(String url, String originalUrl, String timestamp, String date) {
+        Map<String, String> entry = new HashMap<>();
+        entry.put("url", url);
+        entry.put("originalUrl", originalUrl);
+        entry.put("timestamp", timestamp);
+        entry.put("date", date);
         return entry;
     }
 }
