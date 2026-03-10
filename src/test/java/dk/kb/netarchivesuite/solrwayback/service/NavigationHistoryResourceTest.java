@@ -38,8 +38,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     /**
      * Test tracking a search query successfully
      */
-    /* DISABLED UNTIL VICTOR FIX!
-    @Test      
+    @Test
     public void testTrackSearchSuccess() {
         // Setup
         when(mockRequest.getSession(true)).thenReturn(mockSession);
@@ -67,7 +66,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         assertEquals("http://localhost:8080/search?query=test", capturedHistory.get(0).get("url"));
         assertNotNull(capturedHistory.get(0).get("timestamp"));
     }
-   */
+
 
     /**
      * Test tracking multiple search queries
@@ -653,14 +652,8 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
             assertFalse((Boolean) entity.get("success"));
             assertEquals("Navigation history size limit exceeded", entity.get("error"));
 
-            // Argument capture to verify session was not mutated bu storing the session key
-            ArgumentCaptor<Object> attrCaptor = ArgumentCaptor.forClass(Object.class);
-            verify(mockSession, atLeastOnce()).setAttribute(eq(SESSION_KEY), attrCaptor.capture());
-            Object stored = attrCaptor.getValue();
-            assertTrue(stored instanceof List);
-            List<?> storedList = (List<?>) stored;
-            // The stored history should be empty because the add was rejected
-            assertEquals(0, storedList.size());
+            // Verify session was not mutated — setAttribute must never be called with the history key when rejected
+            verify(mockSession, never()).setAttribute(eq(SESSION_KEY), any());
         } finally {
             // Restore original limit
             NavigationHistoryResource.MAX_HISTORY_BYTES = original;
