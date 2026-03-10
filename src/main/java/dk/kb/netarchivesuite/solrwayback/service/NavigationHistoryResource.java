@@ -215,10 +215,8 @@ public class NavigationHistoryResource {
         if (historyObj instanceof List) {
             return (List<Map<String, String>>) historyObj;
         }
-        // create, persist and return an empty history so other callers always get a session-backed list
-        List<Map<String, String>> newHistory = new ArrayList<>();
-        session.setAttribute(SESSION_KEY, newHistory);
-        return newHistory;
+        // Return a new empty list; the caller is responsible for persisting it via setAttribute
+        return new ArrayList<>();
     }
 
     /**
