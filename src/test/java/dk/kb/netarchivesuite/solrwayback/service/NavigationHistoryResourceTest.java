@@ -120,8 +120,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     /**
      * Test tracking playback navigation successfully
      */
-    /* DISABLED UNTIL VICTOR FIX!
-    @Test   
+    @Test
     public void testTrackPlaybackSuccess() {
         // Setup
         when(mockRequest.getSession(true)).thenReturn(mockSession);
@@ -151,7 +150,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         assertEquals("http://example.com/page.html", capturedHistory.get(0).get("originalUrl"));
         assertNotNull(capturedHistory.get(0).get("timestamp"));
      }
-    */
+
     
     /**
      * Test tracking playback with multiple entries
