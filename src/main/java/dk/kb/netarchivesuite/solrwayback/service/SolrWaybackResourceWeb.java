@@ -256,7 +256,7 @@ public class SolrWaybackResourceWeb {
     
     @GET
     @Path("/harvestDates")
-    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    @Produces({ MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML })
     public HarvestDates harvestDates(@QueryParam("url") String url) throws SolrWaybackServiceException {
       try {                    
         return Facade.getHarvestTimesForUrl(url);
