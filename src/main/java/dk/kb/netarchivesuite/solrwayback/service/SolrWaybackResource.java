@@ -453,7 +453,7 @@ public class SolrWaybackResource {
     throw new NotFoundServiceException("");                  
   }
 
-  
+  //TODO should be renamed content encoding?
   @GET
   @Path("/getContentType")
   public String getContentType(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
